@@ -1,3 +1,4 @@
+import re
 import customtkinter as ctk
 from tkinter import messagebox
 from tkcalendar import Calendar
@@ -5,6 +6,37 @@ from tkcalendar import Calendar
 # Set CustomTkinter theme and appearance mode
 ctk.set_appearance_mode("Dark")
 ctk.set_default_color_theme("dark-blue")
+
+def format_human_date(date_str):
+    if not date_str or not str(date_str).strip():
+        return ""
+    s = str(date_str).strip()
+    month_map = {
+        1: "Jan", 2: "Feb", 3: "Mar", 4: "Apr", 5: "May", 6: "June",
+        7: "July", 8: "Aug", 9: "Sept", 10: "Oct", 11: "Nov", 12: "Dec"
+    }
+    m1 = re.match(r"^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})$", s)
+    if m1:
+        y, m, d = int(m1.group(1)), int(m1.group(2)), int(m1.group(3))
+        if 1 <= m <= 12 and 1 <= d <= 31:
+            return f"{d} {month_map[m]} {y}"
+    m2 = re.match(r"^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})$", s)
+    if m2:
+        d, m, y = int(m2.group(1)), int(m2.group(2)), int(m2.group(3))
+        if 1 <= m <= 12 and 1 <= d <= 31:
+            return f"{d} {month_map[m]} {y}"
+    return s
+
+def format_venue_date(venue, date_str):
+    v = venue.strip() if venue else ""
+    d = format_human_date(date_str) if date_str else ""
+    if v and d:
+        return f"{v} - {d}"
+    elif v:
+        return v
+    elif d:
+        return d
+    return ""
 
 # User Specification & PSD Extracted Color Palette & Constants
 BG_COLOR = "#172a3b"
@@ -478,6 +510,7 @@ class PeopleScreen(ctk.CTkFrame):
 
         self.person_entries.append(entry)
         self.update_dropdown_options()
+        entry.focus()
 
     def remove_person_entry(self, row_frame, entry):
         if entry in self.person_entries:
@@ -805,6 +838,7 @@ class MenuScreen(ctk.CTkFrame):
         del_btn.bind("<Leave>", on_leave)
 
         self.item_row_widgets.append(row_dict)
+        entry_name.focus()
 
     def remove_item_row(self, row_frame, row_dict):
         if row_dict in self.item_row_widgets:
@@ -1172,6 +1206,7 @@ class OrderScreen(ctk.CTkFrame):
 
         self.order_row_widgets.append(row_dict)
         self.update_menu_summary()
+        dropdown.focus()
 
     def remove_order_row(self, row_frame, row_dict):
         if row_dict in self.order_row_widgets:
@@ -1332,6 +1367,18 @@ class DisplayScreen(ctk.CTkFrame):
 
         content_box = ctk.CTkFrame(self.scroll_frame, fg_color=BG_COLOR)
         content_box.pack(fill="x", expand=True)
+
+        # Centered Venue & Human-Readable Date Subheader
+        venue_date_text = format_venue_date(self.app.venue, self.app.date)
+        if venue_date_text:
+            sub_info_label = ctk.CTkLabel(
+                content_box,
+                text=venue_date_text,
+                font=get_label_font(18),
+                text_color=TEXT_COLOR,
+                justify="center",
+            )
+            sub_info_label.pack(pady=(10, 15))
 
         # Table Headers
         headers_frame = ctk.CTkFrame(content_box, fg_color=BG_COLOR)
