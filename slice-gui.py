@@ -9,7 +9,7 @@ ctk.set_default_color_theme("dark-blue")
 
 def format_human_date(date_str):
     if not date_str or not str(date_str).strip():
-        return ""
+        return ""   
     s = str(date_str).strip()
     month_map = {
         1: "Jan", 2: "Feb", 3: "Mar", 4: "Apr", 5: "May", 6: "June",
